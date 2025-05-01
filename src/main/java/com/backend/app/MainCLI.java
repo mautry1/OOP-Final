@@ -2,20 +2,44 @@ package com.backend.app;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import com.backend.controller.HomeController;
 import com.backend.core.SmartDevice;
 import com.backend.observer.HomeEvent;
 
 public class MainCLI {
+
     public static void main(String[] args) {
         HomeController controller = HomeController.getInstance();
 
         if (args.length == 0) {
-            printUsage();
-            return;
+            runInteractive(controller);
+        } else {
+            executeSingle(args, controller);
         }
+    }
 
+    private static void runInteractive(HomeController controller) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Entering SmartHome interactive mode. Type 'exit' to quit.");
+        while (true) {
+            System.out.print("> ");
+            String line = scanner.nextLine();
+            if (line == null) break;
+            line = line.trim();
+            if (line.equalsIgnoreCase("exit") || line.equalsIgnoreCase("quit")) {
+                break;
+            }
+            if (line.isEmpty()) continue;
+            String[] tokens = line.split("\\s+");
+            executeSingle(tokens, controller);
+        }
+        scanner.close();
+        System.out.println("Exiting SmartHome CLI.");
+    }
+
+    private static void executeSingle(String[] args, HomeController controller) {
         String cmd = args[0].toLowerCase();
 
         try {
@@ -30,7 +54,6 @@ public class MainCLI {
                     break;
 
                 case "add3rd":
-                    // Usage: add3rd <adapterName> <thirdPartyClass> <id>
                     if (args.length < 4) {
                         System.err.println("Usage: add3rd <adapterName> <className> <id>");
                     } else {
@@ -88,11 +111,13 @@ public class MainCLI {
 
     private static void printUsage() {
         System.out.println("SmartHome CLI Usage:");
+        System.out.println("  (no args)                    - interactive mode");
         System.out.println("  add <type> <vendor> <id>     - register a new device");
         System.out.println("  add3rd <adapter> <class> <id> - register a third-party device");
         System.out.println("  on <id>                      - turn on a powerable device");
         System.out.println("  off <id>                     - turn off a powerable device");
         System.out.println("  list                         - list all devices");
         System.out.println("  telemetry                    - show recorded events");
+        System.out.println("  exit / quit                  - exit interactive mode");
     }
 }

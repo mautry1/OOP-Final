@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import com.backend.adapter.AdapterRegistry;
 import com.backend.adapter.DeviceAdapter;
-import com.backend.adapter.SmartDeviceAdapter;
 import com.backend.core.SmartDevice;
 import com.backend.core.Powerable;
 import com.backend.observer.HomeEvent;
@@ -27,7 +26,11 @@ public class HomeController implements SmartHomeObserver {
         this.homeRepository = repo;
     }
 
-    // --- Singleton accessors ---
+    // Singleton accessor
+    public static HomeController getInstance() {
+        return getInstance(new SmartHomeRepository());
+    }
+
     public static HomeController getInstance(SmartHomeRepository repo) {
         if (instance == null) {
             instance = new HomeController(repo);
@@ -35,16 +38,12 @@ public class HomeController implements SmartHomeObserver {
         return instance;
     }
 
-    public static HomeController getInstance() {
-        return getInstance(new SmartHomeRepository());
-    }
-
     @Override
     public void onSmartHomeEvent(HomeEvent event) {
         telemetry.add(event);
     }
 
-    // --- Core device operations ---
+    // Core operations
     public void addDevice(SmartDevice device) {
         homeRepository.addDevice(device);
         device.addSmartHomeEventListener(this);
@@ -88,10 +87,9 @@ public class HomeController implements SmartHomeObserver {
         return Collections.unmodifiableList(telemetry);
     }
 
-    // --- Third-party adapter support ---
+    // Third-party adapter support
     /**
      * Adds a third-party device via specified adapter.
-     *
      * @param adapterName simple class name of the DeviceAdapter
      * @param className   fully-qualified class name of third-party device
      * @param id          desired device ID in the smart home
@@ -102,25 +100,24 @@ public class HomeController implements SmartHomeObserver {
         Class<? extends DeviceAdapter> adapterClass = prototype.getClass();
 
         try {
-            Constructor<? extends DeviceAdapter> ctor = adapterClass.getConstructor(String.class);
-            DeviceAdapter adapter = ctor.newInstance(className);
+            // Use two-arg ctor: (String className, String id)
+            Constructor<? extends DeviceAdapter> ctor =
+                    adapterClass.getConstructor(String.class, String.class);
+            DeviceAdapter adapter = ctor.newInstance(className, id);
 
-            if (adapter instanceof SmartDevice) {
-                SmartDevice sd = (SmartDevice) adapter;
+            if (adapter instanceof SmartDevice sd) {
                 sd.addSmartHomeEventListener(this);
-                if (sd instanceof SmartDeviceAdapter) {
-                    ((SmartDeviceAdapter) sd).setName(id);
-                }
                 addDevice(sd);
             } else {
-                throw new IllegalArgumentException("Adapter " + adapterName + " does not implement SmartDevice");
+                throw new IllegalArgumentException(
+                        "Adapter " + adapterName + " does not implement SmartDevice");
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to instantiate adapter " + adapterName, e);
         }
     }
 
-    // --- Helper ---
+    // Helper to find devices by ID
     private SmartDevice findDevice(String id) {
         return homeRepository.getAllDevices().stream()
                 .filter(d -> d.getName().equals(id))
