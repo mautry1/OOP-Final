@@ -3,7 +3,7 @@ package com.backend.adapter;
 import com.backend.core.SecureDevice;
 import com.backend.observer.SmartHomeObserver;
 
-public class SecureDeviceAdapter implements SecureDevice {
+public class SecureDeviceAdapter implements SecureDevice, DeviceAdapter {
     //To pass the tests, it was necessary to remove methodName inputs (for each adaptable class)
     //I still set them and know how to use them, I'd just rather pass the tests and output the same result
     private final Object instance;

@@ -1,5 +1,6 @@
 package com.backend.app;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.backend.controller.HomeController;
@@ -7,7 +8,6 @@ import com.backend.core.SmartDevice;
 import com.backend.observer.HomeEvent;
 
 public class MainCLI {
-
     public static void main(String[] args) {
         HomeController controller = HomeController.getInstance();
 
@@ -26,6 +26,16 @@ public class MainCLI {
                     } else {
                         controller.addDevice(args[1], args[2], args[3]);
                         System.out.println("Added device '" + args[3] + "' of type " + args[1]);
+                    }
+                    break;
+
+                case "add3rd":
+                    // Usage: add3rd <adapterName> <thirdPartyClass> <id>
+                    if (args.length < 4) {
+                        System.err.println("Usage: add3rd <adapterName> <className> <id>");
+                    } else {
+                        controller.addThirdPartyDevice(args[1], args[2], args[3]);
+                        System.out.println("Added third-party device '" + args[3] + "' via adapter " + args[1]);
                     }
                     break;
 
@@ -78,10 +88,11 @@ public class MainCLI {
 
     private static void printUsage() {
         System.out.println("SmartHome CLI Usage:");
-        System.out.println("  add <type> <vendor> <id>   - register a new device");
-        System.out.println("  on <id>                    - turn on a powerable device");
-        System.out.println("  off <id>                   - turn off a powerable device");
-        System.out.println("  list                       - list all devices");
-        System.out.println("  telemetry                  - show recorded events");
+        System.out.println("  add <type> <vendor> <id>     - register a new device");
+        System.out.println("  add3rd <adapter> <class> <id> - register a third-party device");
+        System.out.println("  on <id>                      - turn on a powerable device");
+        System.out.println("  off <id>                     - turn off a powerable device");
+        System.out.println("  list                         - list all devices");
+        System.out.println("  telemetry                    - show recorded events");
     }
 }

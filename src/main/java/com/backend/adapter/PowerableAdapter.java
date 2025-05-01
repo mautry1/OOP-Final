@@ -5,7 +5,7 @@ import com.backend.observer.SmartHomeObserver;
 
 import java.lang.reflect.Method;
 
-public class PowerableAdapter implements Powerable {
+public class PowerableAdapter implements Powerable, DeviceAdapter {
     private final Object instance;
     private String turnOnMethod = "turnOn";
     private String turnOffMethod = "turnOff";

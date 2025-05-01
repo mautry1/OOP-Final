@@ -1,11 +1,13 @@
-// File: src/main/java/com/backend/controller/HomeController.java
 package com.backend.controller;
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
+import com.backend.adapter.AdapterRegistry;
+import com.backend.adapter.DeviceAdapter;
+import com.backend.adapter.SmartDeviceAdapter;
 import com.backend.core.SmartDevice;
 import com.backend.core.Powerable;
 import com.backend.observer.HomeEvent;
@@ -25,9 +27,7 @@ public class HomeController implements SmartHomeObserver {
         this.homeRepository = repo;
     }
 
-    /**
-     * Initialize or retrieve singleton with custom repository.
-     */
+    // --- Singleton accessors ---
     public static HomeController getInstance(SmartHomeRepository repo) {
         if (instance == null) {
             instance = new HomeController(repo);
@@ -35,9 +35,6 @@ public class HomeController implements SmartHomeObserver {
         return instance;
     }
 
-    /**
-     * Initialize or retrieve singleton with default (empty) repository.
-     */
     public static HomeController getInstance() {
         return getInstance(new SmartHomeRepository());
     }
@@ -47,51 +44,24 @@ public class HomeController implements SmartHomeObserver {
         telemetry.add(event);
     }
 
-    /**
-     * Add a device instance and register for events.
-     */
+    // --- Core device operations ---
     public void addDevice(SmartDevice device) {
         homeRepository.addDevice(device);
         device.addSmartHomeEventListener(this);
     }
 
-    /**
-     * Convenience overload: build device by type string.
-     */
     public void addDevice(String type, String vendor, String id) {
         SmartDevice device;
         switch (type.toLowerCase()) {
-            case "light":
-                device = new SmartLight(id);
-                break;
-            case "lock":
-                device = new SmartLock(id);
-                break;
-            case "thermostat":
-                device = new SmartThermostat(id);
-                break;
-            case "camera":
-                device = new SecurityCamera(id);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown device type: " + type);
+            case "light":      device = new SmartLight(id); break;
+            case "lock":       device = new SmartLock(id); break;
+            case "thermostat": device = new SmartThermostat(id); break;
+            case "camera":     device = new SecurityCamera(id); break;
+            default: throw new IllegalArgumentException("Unknown device type: " + type);
         }
         addDevice(device);
     }
 
-    /**
-     * Find a registered device by its identifier.
-     */
-    private SmartDevice findDevice(String id) {
-        return homeRepository.getAllDevices().stream()
-                .filter(d -> d.getName().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No device with id: " + id));
-    }
-
-    /**
-     * Turn on a powerable device by id.
-     */
     public void turnOnDevice(String id) {
         SmartDevice device = findDevice(id);
         if (device instanceof Powerable p) {
@@ -101,9 +71,6 @@ public class HomeController implements SmartHomeObserver {
         }
     }
 
-    /**
-     * Turn off a powerable device by id.
-     */
     public void turnOffDevice(String id) {
         SmartDevice device = findDevice(id);
         if (device instanceof Powerable p) {
@@ -113,17 +80,51 @@ public class HomeController implements SmartHomeObserver {
         }
     }
 
-    /**
-     * List all registered devices.
-     */
     public List<SmartDevice> listAllDevices() {
         return Collections.unmodifiableList(homeRepository.getAllDevices());
     }
 
-    /**
-     * Retrieve collected telemetry events.
-     */
     public List<HomeEvent> getTelemetry() {
         return Collections.unmodifiableList(telemetry);
+    }
+
+    // --- Third-party adapter support ---
+    /**
+     * Adds a third-party device via specified adapter.
+     *
+     * @param adapterName simple class name of the DeviceAdapter
+     * @param className   fully-qualified class name of third-party device
+     * @param id          desired device ID in the smart home
+     */
+    public void addThirdPartyDevice(String adapterName, String className, String id) {
+        AdapterRegistry registry = new AdapterRegistry();
+        DeviceAdapter prototype = registry.getAdapterByName(adapterName);
+        Class<? extends DeviceAdapter> adapterClass = prototype.getClass();
+
+        try {
+            Constructor<? extends DeviceAdapter> ctor = adapterClass.getConstructor(String.class);
+            DeviceAdapter adapter = ctor.newInstance(className);
+
+            if (adapter instanceof SmartDevice) {
+                SmartDevice sd = (SmartDevice) adapter;
+                sd.addSmartHomeEventListener(this);
+                if (sd instanceof SmartDeviceAdapter) {
+                    ((SmartDeviceAdapter) sd).setName(id);
+                }
+                addDevice(sd);
+            } else {
+                throw new IllegalArgumentException("Adapter " + adapterName + " does not implement SmartDevice");
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to instantiate adapter " + adapterName, e);
+        }
+    }
+
+    // --- Helper ---
+    private SmartDevice findDevice(String id) {
+        return homeRepository.getAllDevices().stream()
+                .filter(d -> d.getName().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No device with id: " + id));
     }
 }

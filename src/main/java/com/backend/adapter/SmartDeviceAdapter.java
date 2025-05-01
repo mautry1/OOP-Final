@@ -5,7 +5,7 @@ import com.backend.observer.SmartHomeObserver;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class SmartDeviceAdapter implements SmartDevice {
+public class SmartDeviceAdapter implements SmartDevice, DeviceAdapter {
     private final Object instance;
     private String getNameMethod = "getName";
     private String setNameMethod = "setName";

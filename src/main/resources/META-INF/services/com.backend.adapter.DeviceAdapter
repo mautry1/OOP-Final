@@ -1,0 +1,3 @@
+com.backend.adapter.PowerableAdapter
+com.backend.adapter.SecureDeviceAdapter
+com.backend.adapter.SmartDeviceAdapter
