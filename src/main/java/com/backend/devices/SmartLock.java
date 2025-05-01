@@ -43,7 +43,7 @@ public class SmartLock implements SecureDevice {
 
     public void operate() {
         System.out.println("Smart lock is now locked.");
-        HomeEvent event = new HomeEvent(HomeEventType.LOCK_OPENED, this, LocalDateTime.now());
+        HomeEvent event = new HomeEvent(HomeEventType.LOCK_SECURED, this, LocalDateTime.now());
         for (SmartHomeObserver observer : observers) {
             observer.onSmartHomeEvent(event);
         }

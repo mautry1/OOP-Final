@@ -4,5 +4,8 @@ public enum HomeEventType {
     MOTION_DETECTED,
     NAME_CHANGED,
     LIGHT_ON,
-    LOCK_OPENED;
+    LOCK_SECURED,
+    LIGHT_OFF,
+    LOCK_UNSECURED,
+    TEMP_CHANGE
 }
