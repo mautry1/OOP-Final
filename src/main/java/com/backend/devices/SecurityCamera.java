@@ -85,7 +85,7 @@ public class SecurityCamera implements MotionSensing, CameraEnabled, SecureDevic
         poweredOn = false;
     }
 
-    public boolean isPoweredOn() {
+    public boolean isOn() {
         return poweredOn;
     }
 

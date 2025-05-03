@@ -1,55 +1,39 @@
 package com.backend.devices;
 
+import java.util.List;
+import java.util.ArrayList;
 import com.backend.core.SecureDevice;
+import com.backend.core.SmartDevice;
 import com.backend.observer.HomeEvent;
 import com.backend.observer.HomeEventType;
 import com.backend.observer.SmartHomeObserver;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+public class SmartLock implements SmartDevice, SecureDevice {
+    private final String deviceName;
+    private boolean locked = false;
+    private final List<SmartHomeObserver> listeners = new ArrayList<>();
 
-public class SmartLock implements SecureDevice {
-    private boolean isLocked;
-    private String name;
-    private final List<SmartHomeObserver> observers = new ArrayList<>();
-
-    /*public SmartLock() {
-        this.isLocked = true;
-    }*/
-    public SmartLock(String name) {
-        this.isLocked = true;
-        this.name = name;
-    }
-
-    public void lock() {
-        this.isLocked = true;
-        System.out.println("Smart lock is now locked.");
-    }
-
-    public void unlock() {
-        this.isLocked = false;
-        System.out.println("Smart lock is now unlocked.");
-    }
-
-    public boolean isLocked() {
-        return isLocked;
+    public SmartLock(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     @Override
-    public void addSmartHomeEventListener(SmartHomeObserver observer){
-        observers.add(observer);
-    }
-
-    public void operate() {
-        System.out.println("Smart lock is now locked.");
-        HomeEvent event = new HomeEvent(HomeEventType.LOCK_SECURED, this, LocalDateTime.now());
-        for (SmartHomeObserver observer : observers) {
-            observer.onSmartHomeEvent(event);
-        }
-    }
-
     public String getName() {
-        return name;
+        return deviceName;
+    }
+
+    @Override
+    public void addSmartHomeEventListener(SmartHomeObserver observer) {
+        listeners.add(observer);
+    }
+
+    @Override
+    public void operate() {
+        locked = !locked;
+        String state = locked ? "LOCKED" : "UNSECURED";
+        System.out.println("Smart lock " + deviceName + " is now " + (locked ? "LOCKED" : "UNSECURED"));
+        HomeEventType type = locked ? HomeEventType.LOCK_SECURED : HomeEventType.LOCK_UNSECURED;
+        HomeEvent event = new HomeEvent(deviceName, type);
+        listeners.forEach(l -> l.onSmartHomeEvent(event));
     }
 }

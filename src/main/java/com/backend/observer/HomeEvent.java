@@ -1,37 +1,24 @@
 package com.backend.observer;
 
-import com.backend.core.SmartDevice;
+public class HomeEvent {
+    private final String deviceName;
+    private final HomeEventType type;
 
-import java.time.LocalDateTime;
-
-public record HomeEvent(HomeEventType type, SmartDevice smartDevice, LocalDateTime timestamp) {
-    public SmartDevice sourceDevice() {
-        return this.smartDevice;
+    public HomeEvent(String deviceName, HomeEventType type) {
+        this.deviceName = deviceName;
+        this.type = type;
     }
 
-    public static class Builder {
-        private HomeEventType type;
-        private SmartDevice smartDevice;
-        private LocalDateTime timestamp;
+    public String sourceDevice() {
+        return deviceName;
+    }
 
-        public Builder addType(HomeEventType var1) {
-            this.type = var1;
-            return this;
-        }
+    public HomeEventType type() {
+        return type;
+    }
 
-        public Builder addSmartDevice(SmartDevice var1) {
-            this.smartDevice = var1;
-            return this;
-        }
-
-        public Builder addTimestamp(LocalDateTime var1) {
-            this.timestamp = var1;
-            return this;
-        }
-
-        public HomeEvent build() {
-            return new HomeEvent(this.type, this.smartDevice, this.timestamp);
-        }
+    @Override
+    public String toString() {
+        return "HomeEvent[type=" + type + ", device=" + deviceName + "]";
     }
 }
-

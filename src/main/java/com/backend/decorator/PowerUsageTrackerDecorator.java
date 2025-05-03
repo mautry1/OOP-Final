@@ -18,7 +18,7 @@ public abstract class PowerUsageTrackerDecorator implements Powerable {
         device.turnOff();
     }
 
-    public boolean isPoweredOn() {
-        return device.isPoweredOn();
+    public boolean isOn() {
+        return device.isOn();
     }
 }

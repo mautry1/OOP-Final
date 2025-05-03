@@ -58,17 +58,6 @@ public class PowerableAdapter implements Powerable, DeviceAdapter {
         }
     }
 
-    @Override
-    public boolean isPoweredOn() {
-        try {
-            powered = (Boolean) instance.getClass().getMethod(isOnMethod).invoke(instance);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to invoke method isOnMethod: " + isOnMethod, e);
-        }
-
-        return powered;
-    }
-
     public boolean isOn() {
         // TODO: invoke isOnMethod and return the boolean result
         try {

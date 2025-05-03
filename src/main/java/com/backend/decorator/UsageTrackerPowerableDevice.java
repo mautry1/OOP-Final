@@ -31,7 +31,7 @@ public class UsageTrackerPowerableDevice extends PowerUsageTrackerDecorator {
 
     @Override
     public void turnOff() {
-        if (device.isPoweredOn()) {
+        if (device.isOn()) {
             long elapsedTime = System.currentTimeMillis() - lastTurnOnTime;
             totalUsageTime += elapsedTime;
             device.turnOff();
@@ -44,7 +44,7 @@ public class UsageTrackerPowerableDevice extends PowerUsageTrackerDecorator {
     }
 
     public long getTotalUsageTime() {
-        if(device.isPoweredOn()) {
+        if(device.isOn()) {
             return totalUsageTime;
         }
         return totalUsageTime;
